@@ -1,5 +1,5 @@
 /*
- * Human Being — page-world layer (runs in the page's MAIN world at
+ * This Is Not a Joke — page-world layer (runs in the page's MAIN world at
  * document_start, in every frame).
  *
  *  1. Hooks the DOM write paths (textContent, innerHTML, nodeValue,
@@ -23,11 +23,11 @@
  */
 (() => {
   'use strict';
-  const INSTALLED = Symbol.for('human-being.installed');
+  const INSTALLED = Symbol.for('this-is-not-a-joke.installed');
   if (window[INSTALLED]) return;
 
-  const R = globalThis.__humanBeingRewriter;
-  try { delete globalThis.__humanBeingRewriter; } catch (_) { /* ignore */ }
+  const R = globalThis.__notAJokeRewriter;
+  try { delete globalThis.__notAJokeRewriter; } catch (_) { /* ignore */ }
   if (!R) return;
   Object.defineProperty(window, INSTALLED, { value: true });
 
@@ -43,7 +43,7 @@
   let loaded = document.readyState !== 'loading';
 
   const emit = (type, detail) => {
-    try { document.dispatchEvent(new CustomEvent('human-being:' + type, { detail })); } catch (_) { /* ignore */ }
+    try { document.dispatchEvent(new CustomEvent('this-is-not-a-joke:' + type, { detail })); } catch (_) { /* ignore */ }
   };
   const bump = (n, fromParser) => {
     if (!n) return;

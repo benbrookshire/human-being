@@ -1,5 +1,5 @@
 /*
- * Human Being — core rewriting engine.
+ * This Is Not a Joke — core rewriting engine.
  *
  * 1. First person: "I am a human", "I am a bot", "I'm not a robot", "I am a
  *    human being" … all become "I am not joking". Identifiers follow suit:
@@ -18,7 +18,7 @@
 (function (root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
-  else root.__humanBeingRewriter = api;
+  else root.__notAJokeRewriter = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 

@@ -1,4 +1,4 @@
-# Human Being
+# This Is Not a Joke
 
 A Chrome extension that rewrites **“I am a human”**, **“I am a bot”** and **“I am not a bot”** to **“I am not joking”**. It works in page text, in code identifiers, and in what you see in DevTools, including text that JavaScript adds or changes after the page has loaded.
 
@@ -17,11 +17,16 @@ It handles curly apostrophes and HTML entities (`I&rsquo;m not a robot`). It lea
 
 ## Install
 
-1. Open `chrome://extensions` and turn on **Developer mode** (top right).
-2. Click **Load unpacked** and pick this folder.
-3. Reload any tabs that were already open.
+1. **Get the files.** On [the GitHub page](https://github.com/benbrookshire/human-being), click **Code → Download ZIP** and unzip it. You get a folder like `human-being-main`. Or clone it: `git clone https://github.com/benbrookshire/human-being.git`.
+2. In Chrome, go to `chrome://extensions`.
+3. Turn on **Developer mode** (switch in the top-right corner).
+4. Click **Load unpacked** and choose the folder that contains `manifest.json` (e.g. `human-being-main`).
+5. Optional: click the puzzle-piece icon in the toolbar and pin **This Is Not a Joke**.
+6. Reload any tabs that were already open.
 
-The toolbar badge counts how many rewrites were made on the current page.
+Keep the folder where it is: Chrome loads the extension from it each time. To update later, replace the folder’s contents (or `git pull`), then click the ↻ reload icon on the extension’s card in `chrome://extensions`.
+
+The toolbar badge counts how many rewrites were made on the current page. Click the icon to pause the extension or switch Deep mode off.
 
 ## Text that loads later
 
@@ -35,7 +40,7 @@ Frameworks like React often render “I am a {kind}” as two text nodes and lat
 
 **Deep** (on by default) also rewrites the page’s HTML, JavaScript, CSS and JSON *as they download*, using `chrome.debugger`. That way variables, function names, class names, the **Elements**, **Sources** and **Network** panels, and anything you inspect in the **console** all show the rewritten text. It also stays consistent: a CSS rule for `.i-am-a-bot` and the element that uses it are both renamed to `i-am-not-joking`, so nothing breaks.
 
-Chrome shows a “Human Being started debugging this browser” bar while Deep mode is on. That’s expected. Clicking **Cancel** on it switches Deep mode off. To hide the bar, start Chrome with `--silent-debugger-extension-api`.
+Chrome shows a “This Is Not a Joke started debugging this browser” bar while Deep mode is on. That’s expected. Clicking **Cancel** on it switches Deep mode off. To hide the bar, start Chrome with `--silent-debugger-extension-api`.
 
 ## Good to know
 
@@ -60,5 +65,5 @@ The page layer deliberately never renames *structural* identifiers itself (class
 ```sh
 npm test            # rewriting engine unit tests (Node 18+)
 npm run test:e2e    # loads the extension into Chromium via Playwright
-npm run package     # builds human-being.zip
+npm run package     # builds this-is-not-a-joke.zip
 ```

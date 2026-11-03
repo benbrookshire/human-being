@@ -1,5 +1,5 @@
 /*
- * Human Being — background service worker.
+ * This Is Not a Joke — background service worker.
  *
  *  - Registers the page scripts according to the user's settings.
  *  - Deep mode: attaches chrome.debugger to tabs and rewrites response bodies
@@ -10,7 +10,7 @@
  */
 'use strict';
 importScripts('rewriter.js');
-const R = self.__humanBeingRewriter;
+const R = self.__notAJokeRewriter;
 
 const DEFAULTS = { enabled: true, deep: true };
 const PROTOCOL_VERSION = '1.3';
