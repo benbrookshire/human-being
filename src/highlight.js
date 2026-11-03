@@ -69,6 +69,8 @@
     for (const [prop, value] of STYLE) target.style.setProperty(prop, value, 'important');
     marked.add({ box, target });
     target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    // check the box too
+    if (!box.checked && !box.disabled) box.click();
     // Never steal focus from something the person is already typing in.
     if (focus && nothingFocused()) box.focus({ preventScroll: true });
   }
