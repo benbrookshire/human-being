@@ -5,12 +5,13 @@
  *  1. Hooks the DOM write paths (textContent, innerHTML, nodeValue,
  *     createTextNode, setAttribute, document.write, input.value, …) so text
  *     is rewritten *before* it lands in the page — no flicker, and code that
- *     reads it back sees "human being".
+ *     reads it back sees the rewritten text.
  *  2. Walks the DOM (incl. open/closed shadow roots) with a MutationObserver
- *     to catch everything parsed from HTML, including phrases split across
- *     elements ("I am a <b>human</b>").
+ *     for the life of the page, so text parsed from HTML *and* text added or
+ *     changed later by JavaScript is caught, including phrases split across
+ *     elements ("I am a <b>bot</b>").
  *  3. Patches console.* so logged strings, objects and errors show
- *     "human being" in DevTools.
+ *     the rewritten text in DevTools.
  *  4. Patches canvas text, alert/confirm/prompt and document.title.
  *
  * This layer never renames *structural* identifiers (class/id attributes,
@@ -136,35 +137,79 @@
     return false;
   }
 
-  // Apply one rewrite across a run of adjacent text nodes.
+  // What each text node we changed originally said, so a later change by the
+  // page (e.g. a framework updating one of "I am a " + "bot") re-evaluates
+  // the whole phrase from the page's real text — or restores it.
+  const originals = new WeakMap(); // Text -> { original, rewritten }
+
+  function sourceOf(node) {
+    const rec = originals.get(node);
+    if (rec) {
+      if (node.data === rec.rewritten) return rec.original;
+      originals.delete(node); // the page wrote new text since
+    }
+    return node.data;
+  }
+
+  // Apply one rewrite across a run of adjacent text nodes. An edit may span
+  // nodes ("I am a <b>bot</b>"): its text goes into the node where it starts
+  // and the characters it replaces are removed from every node it covers.
   function processRun(nodes, fromParser) {
     if (!nodes.length) return;
-    const texts = nodes.map((n) => n.data);
+    const texts = nodes.map(sourceOf);
+    const tracked = nodes.some((n) => originals.has(n));
     const joined = texts.join('');
-    if (!R.mightMatch(joined)) return;
-    const ins = R.findInsertions(joined, FULL);
-    if (!ins.length) return;
-    if (isBeingEdited(nodes[0])) return;
+    const edits = R.mightMatch(joined) ? R.findEdits(joined, FULL) : [];
+    if (!edits.length && !tracked) return;
+    if (edits.length && isBeingEdited(nodes[0])) return;
 
     const starts = [];
     let pos = 0;
     for (const t of texts) { starts.push(pos); pos += t.length; }
-    const perNode = new Map();
-    for (const i of ins) {
-      let idx = 0;
+    const ends = texts.map((t, k) => starts[k] + t.length);
+
+    // Node that receives an edit's text: a replacement goes where its first
+    // replaced character is; an insertion goes after the preceding character.
+    const homeOf = (e) => {
       for (let k = 0; k < texts.length; k++) {
-        if (texts[k].length && starts[k] < i.index && i.index <= starts[k] + texts[k].length) { idx = k; break; }
-        if (i.index === 0 && texts[k].length) { idx = k; break; }
+        if (!texts[k].length) continue;
+        if (e.length ? starts[k] <= e.index && e.index < ends[k] : starts[k] < e.index && e.index <= ends[k]) return k;
+        if (e.index === 0) return k;
       }
-      if (!perNode.has(idx)) perNode.set(idx, []);
-      perNode.get(idx).push({ index: i.index - starts[idx], text: i.text });
+      return texts.length - 1;
+    };
+
+    const perNode = new Map();
+    const add = (k, edit) => {
+      if (!perNode.has(k)) perNode.set(k, []);
+      perNode.get(k).push(edit);
+    };
+    for (const e of edits) {
+      const home = homeOf(e);
+      const len = e.length || 0;
+      for (let k = 0; k < texts.length; k++) {
+        const from = Math.max(e.index, starts[k]);
+        const to = Math.min(e.index + len, ends[k]);
+        if (k === home) {
+          add(k, { index: Math.min(Math.max(e.index - starts[k], 0), texts[k].length), length: Math.max(to - from, 0), text: e.text, count: e.count });
+        } else if (to > from) {
+          add(k, { index: from - starts[k], length: to - from, text: '', count: 0 });
+        }
+      }
     }
-    let count = 0;
-    for (const [idx, list] of perNode) {
-      nativeDataSet.call(nodes[idx], R.applyInsertions(texts[idx], list));
-      count += list.filter((i) => !/^an?\s$/i.test(i.text)).length;
-    }
-    bump(count, fromParser);
+
+    let changed = false;
+    nodes.forEach((node, k) => {
+      const list = perNode.get(k);
+      const next = list ? R.applyEdits(texts[k], list.sort((a, b) => a.index - b.index)) : texts[k];
+      if (next !== node.data) {
+        nativeDataSet.call(node, next);
+        changed = true;
+      }
+      if (next !== texts[k]) originals.set(node, { original: texts[k], rewritten: next });
+      else originals.delete(node);
+    });
+    if (changed) bump(R.countOf(edits), fromParser);
   }
 
   function collectText(node, out) {
@@ -436,7 +481,7 @@
   };
 
   function containsMatch(v, depth, seen) {
-    if (typeof v === 'string') return R.mightMatch(v) && R.findInsertions(v).length > 0;
+    if (typeof v === 'string') return R.mightMatch(v) && R.findEdits(v).length > 0;
     if (!isPlain(v) || depth > 5 || seen.has(v)) return false;
     seen.add(v);
     for (const k of Object.keys(v)) {
@@ -488,7 +533,7 @@
       return String(parseInt(a, 10));
     });
     const joined = [first, ...rest.map(String)].join(' ');
-    return R.findInsertions(joined).length ? [rw(joined, FULL)] : null;
+    return R.findEdits(joined).length ? [rw(joined, FULL)] : null;
   }
 
   const CONSOLE_METHODS = [

@@ -1,6 +1,6 @@
-window.I_AM_A_HUMAN = 'yes';
+window.I_AM_A_BOT = 'yes';
 window.fromApp = iAmAHuman();
-document.getElementById('dynamic').textContent = 'We are ' + 'human';
+document.getElementById('dynamic').textContent = 'I am ' + 'a bot';
 const root = document.getElementById('host').attachShadow({ mode: 'closed' });
 const s = document.createElement('span');
 s.id = 'shadow-span';

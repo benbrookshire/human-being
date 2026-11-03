@@ -5,7 +5,7 @@
  *  - Deep mode: attaches chrome.debugger to tabs and rewrites response bodies
  *    (HTML, JS, CSS, JSON, XML, subtitles…) before the page ever sees them.
  *    That's what makes variables, function names, the Sources panel, the
- *    Network panel and the console all agree on "human being".
+ *    Network panel and the console all agree on the rewritten text.
  *  - Keeps a per-tab rewrite count on the toolbar badge.
  */
 'use strict';

@@ -13,7 +13,7 @@ const { chromium } = require('playwright');
 
 const EXT = path.resolve(__dirname, '..');
 const FIXTURES = path.join(__dirname, 'fixtures');
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.txt': 'text/plain' };
 
 function serve() {
   const server = http.createServer((req, res) => {
@@ -71,37 +71,42 @@ test('standard mode: visible text, attributes and console', async () => {
     await setMode(sw, { enabled: true, deep: false });
     const { page, logs } = await openFixture(context, base);
 
-    assert.equal(await page.title(), 'I am a human being');
-    assert.equal(await text(page, '#h1'), 'I am a human being');
-    assert.equal(await text(page, '#split'), 'Hello, I am a human being!');
-    assert.equal(await page.$eval('#split b', (b) => b.textContent), 'human being');
-    assert.equal(await text(page, '#contraction'), 'I’m only a human being, after all.');
-    assert.equal(await text(page, '#caps'), 'I AM A HUMAN BEING');
-    assert.equal(await text(page, '#code'), 'const iAmAHumanBeing = true; // i_am_a_human_being, I-AM-A-HUMAN-BEING');
-    assert.equal(await page.$eval('#img', (e) => e.alt), 'I am a human being');
-    assert.equal(await page.$eval('#input', (e) => e.placeholder), 'I am a human being');
-    assert.equal(await page.$eval('#link', (e) => e.title), 'Are you a human being?');
-    assert.equal(await page.$eval('#link', (e) => e.getAttribute('href')), '/i-am-a-human', 'URLs untouched');
-    assert.equal(await text(page, '#dynamic'), 'We are human beings');
-    assert.equal(await page.evaluate(() => window.__shadow()), 'I am a human being', 'closed shadow root');
+    const J = 'I am not joking';
+    assert.equal(await page.title(), J);
+    assert.equal(await text(page, '#h1'), J);
+    assert.equal(await text(page, '#bot'), J + '.');
+    assert.equal(await text(page, '#notbot'), J + '.');
+    assert.equal(await text(page, '#split'), 'Hello, I am not joking!', 'phrase split across elements');
+    assert.equal(await text(page, '#contraction'), J + ', after all.');
+    assert.equal(await text(page, '#caps'), 'I AM NOT JOKING');
+    assert.equal(await text(page, '#other'), 'Are you a human being?');
+    assert.equal(await text(page, '#code'), 'const iAmNotJoking = true; // i_am_not_joking, I-AM-NOT-JOKING');
+    assert.equal(await page.$eval('#img', (e) => e.alt), J);
+    assert.equal(await page.$eval('#input', (e) => e.placeholder), J);
+    assert.equal(await page.$eval('#input', (e) => e.value), J);
+    assert.equal(await page.$eval('#link', (e) => e.title), J);
+    assert.equal(await page.$eval('#link', (e) => e.getAttribute('href')), '/i-am-a-bot', 'URLs untouched');
+    assert.equal(await text(page, '#dynamic'), J);
+    assert.equal(await page.evaluate(() => window.__shadow()), J, 'closed shadow root');
     const comment = await page.evaluate(() => [...document.body.childNodes].find((n) => n.nodeType === 8).data);
-    assert.equal(comment.trim(), 'I am a human being');
-    assert.ok(!(await page.content()).match(/I am a human(?! being)/), 'serialized DOM fully rewritten');
+    assert.equal(comment.trim(), J);
+    assert.ok(!/I am (not )?a (human|bot)/.test(await page.evaluate(() => document.body.innerText)), 'visible text fully rewritten');
 
     // Console output.
-    assert.ok(logs.includes('I am a human being'), logs.join('\n'));
-    assert.ok(logs.filter((l) => l === 'I am a human being').length >= 2, 'format-string log joined + rewritten');
-    assert.ok(logs.some((l) => /Error: I am a human being/.test(l)), 'errors rewritten');
-    // Typed into the console at runtime:
+    assert.ok(logs.filter((l) => l === J).length >= 2, 'plain + format-string logs: ' + logs.join(' | '));
+    assert.ok(logs.some((l) => /Error: I am not joking/.test(l)), 'errors rewritten');
     const live = [];
     page.on('console', (m) => live.push(m.text()));
-    await page.evaluate(() => console.log('i am human', 'iAmAHuman'));
+    await page.evaluate(() => console.log('i am a', 'bot', 'iAmAHuman'));
     await page.waitForTimeout(50);
-    assert.deepEqual(live, ['i am a human being iAmAHumanBeing']);
+    assert.deepEqual(live, ['i am not joking iAmNotJoking']);
 
     // Standard mode deliberately leaves structural identifiers/JS alone.
-    assert.equal(await page.$eval('#styled', (e) => e.className), 'i-am-a-human');
+    assert.equal(await page.$eval('#styled', (e) => e.className), 'i-am-a-bot');
     assert.equal(await page.$eval('#styled', (e) => getComputedStyle(e).color), 'rgb(255, 0, 0)');
+    // …but sentences inside scripts are rewritten (that's safe).
+    assert.equal(await page.evaluate(() => typeof iAmAHuman), 'function');
+    assert.equal(await page.evaluate(() => window.msg), J);
     await page.close();
   } finally {
     await context.close();
@@ -115,25 +120,26 @@ test('deep mode: JS identifiers, variables, CSS and network data', async () => {
     const { page, logs } = await openFixture(context, base);
 
     // JS state as seen from the console.
-    assert.equal(await page.evaluate(() => window.msg), 'I am a human being');
-    assert.equal(await page.evaluate(() => typeof iAmAHumanBeing), 'function');
+    const J = 'I am not joking';
+    assert.equal(await page.evaluate(() => window.msg), J);
+    assert.equal(await page.evaluate(() => typeof iAmNotJoking), 'function');
     assert.equal(await page.evaluate(() => typeof window.iAmAHuman), 'undefined');
-    assert.equal(await page.evaluate(() => window.I_AM_A_HUMAN_BEING), 'yes');
-    assert.equal(await page.evaluate(() => window.fromApp), 'I am a human being');
-    assert.equal(await page.evaluate(() => iAmAHumanBeing.toString()), 'function iAmAHumanBeing() { return "I am a human being"; }');
-    assert.equal(await page.evaluate(() => window.fetched).then((t) => t.trim()), '{"iAmAHumanBeing": true, "message": "I am a human being"}');
+    assert.equal(await page.evaluate(() => window.I_AM_NOT_JOKING), 'yes');
+    assert.equal(await page.evaluate(() => window.fromApp), J);
+    assert.equal(await page.evaluate(() => iAmNotJoking.toString()), 'function iAmNotJoking() { return "I am not joking"; }');
+    assert.equal(await page.evaluate(() => window.fetched).then((t) => t.trim()), '{"iAmNotJoking": true, "message": "I am not joking"}');
 
     // Raw HTML source as the page sees it.
     const source = await page.evaluate(() => document.documentElement.outerHTML);
-    assert.ok(!/I am a human(?! being)/.test(source));
-    assert.ok(source.includes('href="/i-am-a-human"'), 'links still point to the original URL');
+    assert.ok(!/I am (not )?a (human|bot)/.test(source));
+    assert.ok(source.includes('href="/i-am-a-bot"'), 'links still point to the original URL');
 
     // CSS and class names stay consistent with each other.
-    assert.equal(await page.$eval('#styled', (e) => e.className), 'i-am-a-human-being');
+    assert.equal(await page.$eval('#styled', (e) => e.className), 'i-am-not-joking');
     assert.equal(await page.$eval('#styled', (e) => getComputedStyle(e).color), 'rgb(255, 0, 0)');
 
-    assert.ok(logs.includes('I am a human being'));
-    assert.ok(!logs.some((l) => /I am a human(?! being)/.test(l)), logs.join('\n'));
+    assert.ok(logs.includes(J));
+    assert.ok(!logs.some((l) => /I am (not )?a (human|bot)/.test(l)), logs.join('\n'));
 
     const status = await sw.evaluate(async () => {
       const [tab] = await chrome.tabs.query({ url: 'http://127.0.0.1/*' });
@@ -147,13 +153,54 @@ test('deep mode: JS identifiers, variables, CSS and network data', async () => {
   }
 });
 
+for (const deep of [false, true]) {
+  test(`late changes after page load (${deep ? 'deep' : 'standard'} mode)`, async () => {
+    const { context, sw } = await launch();
+    try {
+      await setMode(sw, { enabled: true, deep });
+      const page = await context.newPage();
+      await page.goto(base + 'late.html');
+      await page.waitForFunction(() => window.lateDone === true, null, { timeout: 10000 });
+      await page.waitForTimeout(300);
+      const J = 'I am not joking';
+
+      assert.equal(await text(page, '#html'), 'Hello! I am not joking.', 'innerHTML set by a timer');
+      assert.equal(await text(page, '#inplace'), J, 'existing text node changed in place');
+      assert.equal(await text(page, '#append'), J, 'append(string)');
+      assert.equal(await text(page, '#split'), J, 'phrase completed later by a new element');
+      assert.equal(await page.$eval('#attr', (e) => e.title), J, 'attribute set via property');
+      assert.equal(await text(page, '#fetched'), J, 'text fetched after load');
+      assert.equal(await text(page, '#later'), 'Much later: I am not joking.', 'content added 2s after load');
+      const frame = page.frames().find((f) => f !== page.mainFrame());
+      await frame.waitForSelector('#in-frame');
+      assert.equal(await frame.$eval('#in-frame', (e) => e.textContent), J, 'iframe added after load');
+
+      // A framework keeps updating one of two text nodes in the phrase.
+      const fw = () => text(page, '#framework');
+      assert.equal(await fw(), J);
+      await page.evaluate(() => fwStep('human'));
+      await page.waitForTimeout(50);
+      assert.equal(await fw(), J, 'still rewritten after the framework changes the noun');
+      await page.evaluate(() => fwStep('cat'));
+      await page.waitForTimeout(50);
+      assert.equal(await fw(), 'I am a cat', 'restored when the phrase no longer matches');
+      await page.evaluate(() => fwStep('bot'));
+      await page.waitForTimeout(50);
+      assert.equal(await fw(), J, 'rewritten again');
+      await page.close();
+    } finally {
+      await context.close();
+    }
+  });
+}
+
 test('disabled: nothing is touched', async () => {
   const { context, sw } = await launch();
   try {
     await setMode(sw, { enabled: false, deep: false });
     const { page } = await openFixture(context, base);
     assert.equal(await text(page, '#h1'), 'I am a human');
-    assert.equal(await page.evaluate(() => window.msg), 'I am a human');
+    assert.equal(await page.evaluate(() => window.msg), 'I am a bot');
     await page.close();
   } finally {
     await context.close();

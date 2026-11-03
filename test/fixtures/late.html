@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Late changes</title></head>
+<body>
+  <div id="html"></div>
+  <p id="inplace">waiting</p>
+  <div id="append"></div>
+  <p id="split">I am a </p>
+  <p id="framework"></p>
+  <span id="attr">attr</span>
+  <div id="fetched"></div>
+  <div id="frames"></div>
+  <script>
+    // Framework-style: two text nodes the "framework" keeps references to.
+    const fw = document.getElementById('framework');
+    const fwA = document.createTextNode('Status: ');
+    const fwB = document.createTextNode('pending');
+    fw.append(fwA, fwB);
+    window.fwStep = (s) => { fwB.nodeValue = s; };
+
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.getElementById('html').innerHTML = 'Hello! I am a <em>bot</em>.';
+        document.getElementById('inplace').firstChild.nodeValue = 'I am a human';
+        document.getElementById('append').append('I am not a bot');
+        const b = document.createElement('b');
+        b.append('robot');
+        document.getElementById('split').append(b);
+        document.getElementById('attr').title = 'I am a bot';
+        fwA.nodeValue = 'I am a ';
+        fwB.nodeValue = 'bot';
+        fetch('/late.txt').then((r) => r.text()).then((t) => { document.getElementById('fetched').textContent = t; });
+        const f = document.createElement('iframe');
+        f.srcdoc = '<p id="in-frame">I am a human</p>';
+        document.getElementById('frames').append(f);
+        setTimeout(() => {
+          const p = document.createElement('p');
+          p.id = 'later';
+          p.textContent = 'Much later: I am a bot.';
+          document.body.append(p);
+          window.lateDone = true;
+        }, 1500);
+      }, 500);
+    });
+  </script>
+</body>
+</html>
