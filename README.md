@@ -34,6 +34,15 @@ The extension keeps watching the page for as long as it’s open. Text added by 
 
 Frameworks like React often render “I am a {kind}” as two text nodes and later update just one of them. The extension remembers what each text node originally said, so the phrase is re-checked with the page’s real text on every update. If it no longer matches (“I am a cat”), the original wording comes back.
 
+## “Not a robot” checkboxes
+
+When a page shows a checkbox labelled “I’m not a robot”, “I am a human” or similar, the extension outlines it, scrolls it into view and puts keyboard focus on it. Press **Space** to tick it, then continue as usual. It works for boxes that appear after the page loads, and for custom-styled boxes (the visible part is outlined).
+
+- It **never ticks, clicks or presses anything for you**. Ticking the box is always your own keypress.
+- It won’t move focus away from a field you’re typing in. The box is still outlined; press **Tab** to reach it.
+- For verification widgets that live in their own frame (reCAPTCHA, hCaptcha, Cloudflare Turnstile), it only outlines the widget. Click it, or **Tab** into it and press **Space**.
+- Turn it off with **Highlight “not a robot” boxes** in the popup.
+
 ## Two modes
 
 **Standard** rewrites everything you can *see*: text (even when split across elements, like `I am a <b>bot</b>`), titles, tooltips, `alt`/`placeholder`/`aria-*` text, form values, comments, open and closed shadow DOM, canvas text, `alert`/`confirm`/`prompt`, and **console output** (`console.log`, objects, errors, `%s` format strings). It also hooks `textContent`, `innerHTML`, `createTextNode` and similar, so the page’s own code reads back the rewritten text.
@@ -56,6 +65,7 @@ Chrome shows a “This Is Not a Joke started debugging this browser” bar while
 - `src/rewriter.js` is the matching engine. Every rewrite is a list of edits (“replace these characters with this text”). That’s what lets one phrase be fixed across several DOM nodes. First-person matches (“I am not joking”) take priority over the “human being” rule where they overlap.
 - `src/page.js` runs in each page’s own JavaScript world at `document_start` and stays active for the life of the page. It does the DOM, hook and console work.
 - `src/bridge.js` passes counts from the page to the extension.
+- `src/highlight.js` outlines and focuses “not a robot” checkboxes.
 - `src/background.js` registers the page scripts. In Deep mode it also intercepts text responses with the DevTools Protocol `Fetch` domain (including out-of-process iframes and workers) and fulfils them with the rewritten body.
 
 The page layer deliberately never renames *structural* identifiers itself (class names, identifiers in `<script>` code, HTML strings). Renaming only one copy of an identifier would break the page. Deep mode renames all the copies together at the network layer.

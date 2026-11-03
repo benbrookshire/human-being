@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Checkbox</title>
+<style>.fancy input { position: absolute; opacity: 0; } .fancy span { display: inline-block; width: 20px; height: 20px; border: 1px solid #333; }</style>
+</head>
+<body>
+  <label><input type="checkbox" id="remember"> Remember me</label>
+  <input id="search" placeholder="Search">
+  <div id="slot"></div>
+  <button id="continue">Continue</button>
+  <script>
+    const params = new URLSearchParams(location.search);
+    if (params.has('typing')) document.getElementById('search').focus();
+    setTimeout(() => {
+      document.getElementById('slot').innerHTML = params.has('fancy')
+        ? '<label class="fancy" id="fancy-label"><input type="checkbox" id="robot"><span></span> I am a human</label>'
+        : '<label><input type="checkbox" id="robot"> I’m not a robot</label>';
+      window.ready = true;
+    }, 500);
+  </script>
+</body>
+</html>

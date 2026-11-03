@@ -12,7 +12,7 @@
 importScripts('rewriter.js');
 const R = self.__notAJokeRewriter;
 
-const DEFAULTS = { enabled: true, deep: true };
+const DEFAULTS = { enabled: true, deep: true, highlight: true };
 const PROTOCOL_VERSION = '1.3';
 // Text-bearing resource types. Chrome versions differ in which names the Fetch
 // filter accepts, so unknown ones are dropped at runtime (see enableFetch).
@@ -71,7 +71,7 @@ async function syncContentScripts(s) {
   const base = { matches: ['<all_urls>'], allFrames: true, matchOriginAsFallback: true, runAt: 'document_start', persistAcrossSessions: true };
   await chrome.scripting.registerContentScripts([
     { ...base, id: 'hb-main', world: 'MAIN', js: pageScripts() },
-    { ...base, id: 'hb-bridge', js: ['src/bridge.js'] },
+    { ...base, id: 'hb-bridge', js: ['src/bridge.js', 'src/highlight.js'] },
   ]);
 }
 

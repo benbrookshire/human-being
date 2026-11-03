@@ -8,6 +8,8 @@ function render(status) {
   $('enabled').checked = s.enabled;
   $('deep').checked = s.deep;
   $('deep').disabled = !s.enabled;
+  $('highlight').checked = s.highlight;
+  $('highlight').disabled = !s.enabled;
   $('count').textContent = status.count;
   $('count-label').textContent = status.count === 1 ? 'rewrite on this page' : 'rewrites on this page';
   let msg = '';
@@ -25,7 +27,7 @@ async function refresh() {
 }
 
 async function save() {
-  await chrome.runtime.sendMessage({ type: 'set-settings', settings: { enabled: $('enabled').checked, deep: $('deep').checked } });
+  await chrome.runtime.sendMessage({ type: 'set-settings', settings: { enabled: $('enabled').checked, deep: $('deep').checked, highlight: $('highlight').checked } });
   refresh();
 }
 
@@ -36,5 +38,6 @@ async function save() {
   render(status);
   $('enabled').addEventListener('change', save);
   $('deep').addEventListener('change', save);
+  $('highlight').addEventListener('change', save);
   $('reload').addEventListener('click', () => { if (tab) chrome.tabs.reload(tab.id); window.close(); });
 })();

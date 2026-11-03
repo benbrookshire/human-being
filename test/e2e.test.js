@@ -194,6 +194,48 @@ for (const deep of [false, true]) {
   });
 }
 
+test('highlights "not a robot" checkboxes for keyboard use, never ticks them', async () => {
+  const { context, sw } = await launch();
+  try {
+    await setMode(sw, { enabled: true, deep: false, highlight: true });
+    const page = await context.newPage();
+    const MARK = 'data-not-a-joke-highlight';
+
+    await page.goto(base + 'checkbox.html');
+    await page.waitForFunction((m) => document.getElementById('robot')?.hasAttribute(m), MARK, { timeout: 5000 });
+    assert.equal(await page.$eval('#robot', (e) => e.checked), false, 'never ticked automatically');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'robot', 'has keyboard focus');
+    assert.equal(await page.$eval('#robot', (e) => getComputedStyle(e).outlineStyle), 'solid');
+    assert.equal(await page.$eval('#remember', (e) => e.hasAttribute('data-not-a-joke-highlight')), false, 'unrelated box ignored');
+    await page.keyboard.press('Space');
+    assert.equal(await page.$eval('#robot', (e) => e.checked), true, 'Space ticks it');
+    await page.waitForTimeout(50);
+    assert.equal(await page.$eval('#robot', (e) => e.style.outline), '', 'highlight removed once ticked');
+
+    // A visually hidden, custom-styled checkbox: outline its label instead.
+    await page.goto(base + 'checkbox.html?fancy');
+    await page.waitForFunction((m) => document.getElementById('robot')?.hasAttribute(m), MARK, { timeout: 5000 });
+    assert.equal(await page.$eval('#fancy-label', (e) => getComputedStyle(e).outlineStyle), 'solid');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'robot');
+
+    // Never steal focus from a field the person is typing in.
+    await page.goto(base + 'checkbox.html?typing');
+    await page.waitForFunction((m) => document.getElementById('robot')?.hasAttribute(m), MARK, { timeout: 5000 });
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'search');
+
+    // Switched off in the popup: nothing happens.
+    await setMode(sw, { enabled: true, deep: false, highlight: false });
+    await page.goto(base + 'checkbox.html');
+    await page.waitForFunction(() => window.ready);
+    await page.waitForTimeout(600);
+    assert.equal(await page.$eval('#robot', (e) => e.hasAttribute('data-not-a-joke-highlight')), false);
+    assert.notEqual(await page.evaluate(() => document.activeElement.id), 'robot');
+    await page.close();
+  } finally {
+    await context.close();
+  }
+});
+
 test('disabled: nothing is touched', async () => {
   const { context, sw } = await launch();
   try {
