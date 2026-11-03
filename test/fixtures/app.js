@@ -1,0 +1,10 @@
+window.I_AM_A_HUMAN = 'yes';
+window.fromApp = iAmAHuman();
+document.getElementById('dynamic').textContent = 'We are ' + 'human';
+const root = document.getElementById('host').attachShadow({ mode: 'closed' });
+const s = document.createElement('span');
+s.id = 'shadow-span';
+s.append('I am a human');
+root.append(s);
+window.__shadow = () => root.getElementById('shadow-span').textContent;
+fetch('/data.json').then((r) => r.text()).then((t) => { window.fetched = t; });

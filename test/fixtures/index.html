@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>I am a human</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <h1 id="h1">I am a human</h1>
+  <p id="split">Hello, I am a <b>human</b>!</p>
+  <p id="contraction">I’m only human, after all.</p>
+  <p id="caps">I AM A HUMAN</p>
+  <pre id="code">const iAmAHuman = true; // i_am_a_human, I-AM-A-HUMAN</pre>
+  <img id="img" alt="I am a human" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
+  <input id="input" placeholder="I am a human" value="I am a human">
+  <a id="link" href="/i-am-a-human" title="Are you human?">link</a>
+  <div id="styled" class="i-am-a-human">styled</div>
+  <!-- I am a human -->
+  <div id="dynamic"></div>
+  <div id="host"></div>
+  <script>
+    window.msg = "I am a human";
+    function iAmAHuman() { return "I am a human"; }
+    console.log("I am a human");
+    console.log("I am a %s", "human");
+    console.log({ note: "I am a human", nested: ["i am human"] });
+    console.error(new Error("I am a human"));
+  </script>
+  <script src="/app.js"></script>
+</body>
+</html>

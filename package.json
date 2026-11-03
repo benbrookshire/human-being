@@ -1,0 +1,12 @@
+{
+  "name": "human-being",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chrome extension that rewrites “I am a human” to “I am a human being” everywhere.",
+  "scripts": {
+    "test": "node --test test/rewriter.test.js",
+    "test:e2e": "node --test --test-concurrency=1 test/e2e.test.js",
+    "package": "rm -f human-being.zip && zip -r human-being.zip manifest.json src popup icons"
+  },
+  "license": "MIT"
+}

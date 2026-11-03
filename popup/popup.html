@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Human Being</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <img src="../icons/icon48.png" alt="" width="28" height="28">
+    <div>
+      <h1>Human Being</h1>
+      <p class="tagline">I am a human <em>being</em>.</p>
+    </div>
+  </header>
+
+  <section class="count">
+    <span id="count">0</span>
+    <span id="count-label">rewrites on this page</span>
+  </section>
+
+  <label class="row">
+    <span>
+      <strong>Enabled</strong>
+      <small>Rewrite page text, attributes, canvas, dialogs and console output.</small>
+    </span>
+    <input type="checkbox" id="enabled" role="switch">
+  </label>
+
+  <label class="row">
+    <span>
+      <strong>Deep mode</strong>
+      <small>Also rewrite the page’s HTML, JavaScript, CSS and JSON as they load, so variables, function names and DevTools all say “human being”. Chrome will show a “started debugging this browser” bar.</small>
+    </span>
+    <input type="checkbox" id="deep" role="switch">
+  </label>
+
+  <p id="status" class="status" aria-live="polite"></p>
+  <button id="reload" hidden>Reload tab to apply</button>
+
+  <script src="popup.js"></script>
+</body>
+</html>
