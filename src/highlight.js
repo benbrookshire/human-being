@@ -115,6 +115,7 @@
     const target = outlineTarget(box);
     for (const [prop, value] of BOX_STYLE) target.style.setProperty(prop, value, 'important');
     marked.add({ box, target });
+    if (!box.checked && !box.disabled) box.click(); //check the bot box automatically
     scrolled = false; // the box is what the person needs to see first
     scrollOnce(target);
     // Never steal focus from something the person is already typing in.
@@ -162,6 +163,7 @@
     ensureStyles();
     b.setAttribute(BUTTON_MARK, '');
     markedButtons.add(b);
+    b.click(); //click the continue button
     scrollOnce(b);
   }
 
