@@ -1,7 +1,7 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 4,
   "name": "This Is Not a Joke",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Turns “I am a human”, “I am a bot” and “I am not a bot” (and iAmABot, i_am_a_human, …) into “I am not joking” everywhere — page text, code, and the DevTools console.",
   "minimum_chrome_version": "125",
   "permissions": ["scripting", "storage", "debugger", "webNavigation"],
