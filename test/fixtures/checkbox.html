@@ -14,7 +14,10 @@
     setTimeout(() => {
       document.getElementById('slot').innerHTML = params.has('fancy')
         ? '<label class="fancy" id="fancy-label"><input type="checkbox" id="robot"><span></span> I am a human</label>'
-        : '<label><input type="checkbox" id="robot"> I’m not a robot</label>';
+        : params.has('form')
+          ? '<form id="f" onsubmit="window.submitted = true; return false"><label><input type="checkbox" id="robot"> I am not a bot</label>' +
+            '<button type="button" id="cancel">Cancel</button> <button id="verify">Verify</button></form>'
+          : '<label><input type="checkbox" id="robot"> I’m not a robot</label>';
       window.ready = true;
     }, 500);
   </script>

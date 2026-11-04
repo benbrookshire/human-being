@@ -236,6 +236,58 @@ test('highlights "not a robot" checkboxes for keyboard use, never ticks them', a
   }
 });
 
+test('highlights the matching continue/submit button, never clicks it', async () => {
+  const { context, sw } = await launch();
+  try {
+    await setMode(sw, { enabled: true, deep: false, highlight: true });
+    const page = await context.newPage();
+    const BTN = 'data-not-a-joke-button';
+    const marked = (sel) => page.$eval(sel, (e, m) => e.hasAttribute(m), BTN);
+    const waitMarked = (sel) => page.waitForFunction(([s, m]) => document.querySelector(s)?.hasAttribute(m), [sel, BTN], { timeout: 5000 });
+
+    // Checkbox without a form: the nearby "Continue" button.
+    await page.goto(base + 'checkbox.html');
+    await waitMarked('#continue');
+    assert.equal(await page.$eval('#continue', (e) => getComputedStyle(e).outlineStyle), 'solid');
+    assert.notEqual(await page.$eval('#continue', (e) => getComputedStyle(e).animationName), 'none', 'pulses');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'robot', 'focus stays on the checkbox');
+
+    // Checkbox in a form: that form's "Verify" button, not "Cancel" or the outside "Continue".
+    await page.goto(base + 'checkbox.html?form');
+    await waitMarked('#verify');
+    assert.equal(await marked('#cancel'), false);
+    assert.equal(await marked('#continue'), false);
+    await page.waitForTimeout(300);
+    assert.equal(await page.evaluate(() => window.submitted), undefined, 'never submitted automatically');
+    await page.keyboard.press('Space');
+    await page.click('#verify');
+    assert.equal(await page.evaluate(() => window.submitted), true, 'the person can submit');
+    assert.equal(await marked('#verify'), false, 'highlight removed once clicked');
+    await page.waitForTimeout(400);
+    assert.equal(await marked('#verify'), false, 'and not re-added');
+
+    // Check page with no checkbox (Amazon-style): "Continue shopping".
+    await page.goto(base + 'botcheck.html');
+    await waitMarked('#shop');
+    await page.waitForTimeout(300);
+    assert.equal(await page.evaluate(() => window.submitted), undefined, 'never clicked automatically');
+
+    // An ordinary page with a Continue button is left alone.
+    await page.goto(base + 'plain.html');
+    await page.waitForTimeout(600);
+    assert.equal(await marked('#continue'), false);
+
+    // Switched off: no button highlight either.
+    await setMode(sw, { enabled: true, deep: false, highlight: false });
+    await page.goto(base + 'botcheck.html');
+    await page.waitForTimeout(600);
+    assert.equal(await marked('#shop'), false);
+    await page.close();
+  } finally {
+    await context.close();
+  }
+});
+
 test('disabled: nothing is touched', async () => {
   const { context, sw } = await launch();
   try {
