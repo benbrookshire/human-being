@@ -1,8 +1,8 @@
 {
   "name": "this-is-not-a-joke",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "private": true,
-  "description": "Chrome extension that rewrites “I am a human”, “I am a bot” and “I am not a bot” to “I am not joking” everywhere.",
+  "description": "Quit all the jokes about being human or bot. You're not joking everywhere — page text, code, and the DevTools console.",
   "scripts": {
     "test": "node --test test/rewriter.test.js",
     "test:e2e": "node --test --test-concurrency=1 test/e2e.test.js",
