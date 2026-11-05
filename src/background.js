@@ -49,29 +49,6 @@ async function getSettings() {
 
 const stripHash = (url) => String(url || '').split('#')[0];
 
-// ---- configuration -------------------------------------------------------
-
-const ID = 'auto-tick';
-
-async function syncScripts() {
-  const { patterns = [] } = await chrome.storage.sync.get('patterns');
-  await chrome.scripting.unregisterContentScripts({ ids: [ID] }).catch(() => {});
-  if (!patterns.length) return;
-
-  await chrome.scripting.registerContentScripts([{
-    id: ID,
-    js: ['content.js'],
-    matches: patterns,
-    runAt: 'document_idle',
-    allFrames: true
-  }]);
-}
-
-chrome.runtime.onInstalled.addListener(syncScripts);
-chrome.storage.onChanged.addListener(changes => {
-  if (changes.patterns) syncScripts();
-});
-
 // ---- badge ---------------------------------------------------------------
 
 function updateBadge(tabId) {
