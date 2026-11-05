@@ -5,6 +5,8 @@
   "description": "Quit all the jokes about being human or bot. You're not joking everywhere — page text, code, and the DevTools console.",
   "minimum_chrome_version": "125",
   "permissions": ["scripting", "storage", "debugger", "webNavigation"],
+  "optional_host_permissions": ["*://*/*"],
+  "options_page": "options.html",
   "host_permissions": ["<all_urls>"],
   "background": { "service_worker": "src/background.js" },
   "action": {
