@@ -7,7 +7,7 @@
   "permissions": ["scripting", "storage", "debugger", "webNavigation"],
   "optional_host_permissions": ["*://*/*"],
   "options_page": "options.html",
-  "host_permissions": ["<all_urls>"],
+  "host_permissions": ["https://*.amazon.com/*"],
   "background": { "service_worker": "src/background.js" },
   "action": {
     "default_title": "This Is Not a Joke",
